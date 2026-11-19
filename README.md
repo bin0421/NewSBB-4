@@ -291,3 +291,19 @@
 - **설명**
   - 작성 테스트는 일부러 글 작성자와 다른 회원(`user2`)으로 요청한다. 댓글 작성자가 글 작성자를 따라가지 않고 요청자로 정해지는지 확인하기 위해서다.
   - 실패 확인 : `PostComment.getAuthor()` 가 없어 컴파일에 실패한다.
+
+### 013-2 댓글 작성자
+
+- **링크**
+- **원인** : 013-1 테스트가 실패한다. 댓글에 작성자 필드가 없고, 댓글 작성 API 가 요청자를 받지 않는다.
+- **작업**
+  - 추가 : `PostComment.author` — `@ManyToOne(fetch = LAZY) Member`
+  - 수정 : 생성자 `PostComment(post, content)` → `PostComment(author, post, content)`
+  - 수정 : `Post.addComment(content)` → `addComment(author, content)`, `PostService.writeComment(post, content)` → `writeComment(author, post, content)`
+  - 수정 : `PostCommentDto` 에 `authorId`, `authorName` 추가
+  - 수정 : `BaseInitData.work2()` — 1~5번 댓글을 `user1`, `user2`, `user3`, `user1`, `user2` 가 작성
+  - 수정 : `ApiV1PostCommentController.write()` — `@RequestParam(required = false) Integer actorId` 를 받아 `memberService.getActor(actorId)` 를 작성자로 사용
+- **설명**
+  - 글 작성자(012-2)와 같은 구조다. 댓글은 여전히 글을 통해(`Post.addComment()`) 만들어지고, 작성자만 인자로 더 받는다.
+  - 요청자 확인을 글 조회보다 먼저 한다. 로그인하지 않은 요청이면 글이 있는지 없는지도 알려 주지 않고 401 로 끝낸다.
+  - 결과 : `BaseInitDataTest.t4`, `ApiV1PostCommentControllerTest.t1`·`t2`·`t3`·`t6` 통과, 테스트 26개 모두 통과.
