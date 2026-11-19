@@ -1,0 +1,122 @@
+NewSBB-4 진행 기록
+==================
+- 저장소 : https://github.com/bin0421/NewSBB-4
+- 로컬 폴더 : C:\projects\NewSBB\NewSBB-4
+- 시작일 : 2026-11-19
+- 용도 : 프롬프트, 결정 사항, 진행 과정을 기록한다.
+
+
+[1] 원본 프롬프트
+-----------------
+참고자료
+- https://www.slog.gg/p/14172 사이트의 1~68강
+-- 69강부터는 실습 문제이니 읽지 말 것
+- https://github.com/bin0421/NewSBB-3의 마지막 커밋 상태의 코드에서 시작
+-- 커밋 번호는 초기화하여 1부터 시작할 것
+
+요구사항 : 아래 전제와 10개의 회원가입 API, 내 정보 API 관련 문제를 TDD 방식으로 구현하고 테스트
+
+전제. actorId 추가
+- 로그인/로그아웃 기능은 구현하지 않는다.
+- 특정 요청을 1번 회원으로서 진행하고 싶다면 주소에 ?actorId=1를 붙인다
+- actorId가 필요한 액션 : 내 정보, 글 작성, 글 수정, 글 삭제, 댓글 작성, 댓글 수정, 댓글 삭제
+- 예외 클래스
+-- com.back.global.GlobalExceptionHandler.MemberDuplicateUsernameException : 회원가입 시 중복된 username이 입력된 경우
+-- com.back.global.GlobalExceptionHandler.UnauthenticatedException : actorId 아이디가 필요한 액션에서 actorId 파라미터가 는 경우
+-- com.back.global.GlobalExceptionHandler.AccessDeniedException : 글/댓글의 수정/삭제에서 actorId가 작성자가 아닌 경우
+-- actorId가 필요한 액션에서 actorId 파라미터가 없거나 존재하지 않는 actorId 라면 UnauthenticatedException throw, 이 때
+   응답코드 : 401
+   응답본문 : {"resultCode": "401-1", "msg": "로그인 후 이용해주세요.", "data": null}
+-- 권한이 없을 때(다른 사람의 작성 글이나 댓글 삭제 등)
+   응답코드 : 403
+   응답본문 : {"resultCode": "403-1", "msg": "권한이 없습니다.", "data": null}
+
+1. 회원가입 api
+- POST /api/v1/members/join 으로 회원가입
+- 요청본문 : {"username": "string", "password": "string", "name": "string"}
+- 요청본문 제약 : username(Size(4, 30), 유니크), password(Size(8, 30)), name(Size(2, 30))
+- 응답상태 : 201
+- 응답본문 : {"resultCode": "201-1", "msg": "%s님 환영합니다. 회원가입이 완료되었습니다.", "data": null}
+- username이 중복되면 MemberDuplicateUsernameException 에러를 throw하고 이 때
+  응답코드 : 409
+  응답본문 : {"resultCode": "409-1", "msg": "%s(은)는 이미 사용중인 username 입니다.", "data": null}
+
+2. 내 정보 api
+- GET /api/v1/members/me?actorId={작성자번호}
+- 응답상태 : 200
+- 응답본문 : {"id": 번호, "createDate": "날짜", "updateDate": "날짜", "username": "string", "name": "string"}
+-- MemberDto에는 비밀번호가 없어야 한다.
+
+3. 샘플 데이터 생성, 회원 6명
+- system(시스템), admin(관리자), user1(유저1), user2(유저2), user3(유저3), user3(유저4)
+- 비밀번호는 모두 12345678
+
+4. 모든 글과 댓글은 작성자인 author 필드 필요
+- 1번 글의 작성자 : user1 / 2번 글 : user2 / 3번 글 : user3
+- 1번 댓글 : user1 / 2번 댓글 : user2 / 3번 댓글 : user3 / 4번 댓글 : user1 / 5번 댓글 : user2
+
+5. 글 작성 시 작성자 정보가 필요 - POST /api/v1/posts?actorId={작성자번호}
+6. 댓글 작성 시 작성자 정보가 필요 - POST /api/v1/posts/{글번호}/comments?actorId={작성자번호}
+7. 글 삭제 시 작성자 본인이어야 함(권한) - DELETE /api/v1/posts/{글번호}?actorId={작성자번호}
+8. 글 수정 시 작성자 본인이어야 함(권한) - PUT /api/v1/posts/{글번호}?actorId={작성자번호}
+9. 댓글 삭제 시 작성자 본인이어야 함(권한) - DELETE /api/v1/posts/{글번호}/comments/{댓글번호}?actorId={작성자번호}
+10. 댓글 수정 시 작성자 본인이어야 함(권한) - PUT /api/v1/posts/{글번호}/comments/{댓글번호}?actorId={작성자번호}
+
+
+[2] 결정 사항
+-------------
+1. 시작점 : NewSBB-3 의 마지막 커밋(3e39d9e) 코드 트리를 그대로 가져와 001 로 커밋한다. 이전 히스토리는 가져오지 않는다.
+2. 개발 환경은 NewSBB-3 과 같다. JDK 25 / Spring Boot 4.1.2 / Gradle 9.8.2 / H2.
+3. 57~68강(강사 저장소 058~068 커밋)은 SpringDoc, 홈 컨트롤러, CORS 설정이다. 회원 기능과 무관하지만
+   참고 범위가 68강까지이므로 회원 작업 전에 002~004 로 반영한다. 강사 코드에 테스트가 없는 설정 작업이라 테스트 없이 커밋한다.
+   69강 이후(강사 저장소 070~)는 실습 문제이므로 보지 않고 직접 설계한다.
+4. TDD : NewSBB-3 과 같다. -1 테스트 추가 (실패) / -2 구현 (통과) / 필요할 때만 -3 이후.
+   테스트만 넣은 커밋은 "의도한 이유로" 실패하는지 확인하고 README 에 실패 이유를 적는다.
+5. 예외 클래스 위치 : 요구사항의 "com.back.global.GlobalExceptionHandler.XxxException" 을
+   GlobalExceptionHandler 의 중첩(static) 클래스로 해석한다. GlobalExceptionHandler 는 NewSBB-3 의 패키지
+   com.back.global.globalExceptionHandler 에 그대로 둔다. (AccessDeniedException 은 java.nio.file 의 같은 이름 클래스와
+   겹치므로 중첩 클래스가 이름 충돌도 피한다.)
+6. 샘플 회원의 6번째 "user3(유저4)" 는 username 이 유니크여야 하므로 오타로 보고 user4(유저4) 로 만든다.
+   회원 id 는 생성 순서대로 system 1, admin 2, user1 3, user2 4, user3 5, user4 6 이다.
+   테스트는 id 를 하드코딩하지 않고 username 으로 회원을 찾아 쓴다.
+7. 비밀번호는 암호화 강의 전이므로 평문으로 저장한다. 응답(MemberDto)에는 비밀번호를 넣지 않는다.
+8. MemberDto 의 날짜 필드명은 요구사항대로 createDate, updateDate 이다. (값은 BaseEntity 의 createDate, modifyDate)
+9. 회원가입 환영 메시지의 %s 는 name, 중복 메시지의 %s 는 username 이다.
+10. 회원가입 요청 필드는 글·댓글과 같이 @NotBlank + 요구사항의 @Size 를 붙인다.
+11. actorId : 액션마다 @RequestParam(required = false) Integer actorId 로 받고, MemberService.getActor(actorId) 가
+    null 이거나 없는 회원이면 UnauthenticatedException 을 던진다. (Swagger 문서에 actorId 파라미터가 보이도록 명시적으로 받는다.)
+12. 권한 검사는 엔티티가 한다. Post/PostComment.checkActorCanModify(actor), checkActorCanDelete(actor) 가 작성자가 아니면
+    AccessDeniedException 을 던진다.
+13. 글·댓글 응답 DTO 에 작성자 정보 authorId, authorName 을 더한다. (작성자가 잘 들어갔는지 API 로 확인할 수 있게)
+14. 커밋 메시지 : "번호 + 명사형 제목" 한 줄. (실패) 커밋은 제목 끝에 표시한다. 푸시는 사용자 확인 후 한다.
+
+
+[3] 단계 목록
+-------------
+001    NewSBB-3 코드로 시작
+002    SpringDoc 설정                       (57~63강)
+003    홈 컨트롤러                          (60·63·65강)
+004    CORS 설정                            (67·68강)
+005    회원 엔티티
+006    샘플 회원 6명                        (-1, -2)
+007    회원가입                             (-1, -2)
+008    회원가입 요청 검증                   (-1, -2)
+009    회원가입 username 중복 409           (-1, -2)
+010    내 정보                              (-1, -2)
+011    내 정보 actorId 없음·없는 회원 401   (-1, -2)
+012    글 작성자                            (-1, -2)
+013    댓글 작성자                          (-1, -2)
+014    글 작성 시 작성자                    (-1, -2)
+015    글 작성 401                          (-1, -2)
+016    댓글 작성 시 작성자                  (-1, -2)
+017    댓글 작성 401                        (-1, -2)
+018    글 삭제 권한                         (-1, -2)
+019    글 수정 권한                         (-1, -2)
+020    댓글 삭제 권한                       (-1, -2)
+021    댓글 수정 권한                       (-1, -2)
+
+
+[4] 진행 로그
+-------------
+2026-11-19  참고자료(slog.gg/p/14172 1~68강, jhs512/p-14172-2 058~068) 분석, NewSBB-3 마지막 커밋 테스트 15개 통과 확인
+2026-11-19  001 NewSBB-3 코드로 시작
