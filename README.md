@@ -220,3 +220,14 @@
   - 엔티티를 그대로 내보내지 않고 DTO 로 바꿔 내보내므로, DTO 에 없는 비밀번호는 응답에 절대 실리지 않는다.
   - 이 단계는 정상 요청만 통과시키는 최소 구현이다. `actorId` 가 없으면 400(필수 파라미터 누락), 없는 회원이면 404 가 나간다. 401 은 011 에서 테스트를 먼저 넣고 바꾼다.
   - 결과 : `ApiV1MemberControllerTest.t4` 통과, 테스트 20개 모두 통과.
+
+### 011-1 내 정보 401 테스트 추가 (실패)
+
+- **링크**
+- **원인** : `actorId` 가 필요한 액션에서 `actorId` 가 없거나 없는 회원이면 401 로 응답해야 한다. 내 정보로 먼저 정한다.
+- **작업**
+  - 추가 : 테스트 `ApiV1MemberControllerTest.t5` — `actorId` 없이 요청, 401, `"401-1"`, `"로그인 후 이용해주세요."`, `data` `null` 확인
+  - 추가 : 테스트 `ApiV1MemberControllerTest.t6` — 없는 회원 번호(`Integer.MAX_VALUE`)로 요청, 응답은 t5 와 같음
+- **설명**
+  - 두 경우 모두 "누구인지 확인할 수 없음"이므로 같은 응답이다.
+  - 실패 확인 : t5 는 필수 파라미터 누락으로 `Status expected:<401> but was:<400>`, t6 은 `Optional.get()` 의 `NoSuchElementException` 으로 `expected:<401> but was:<404>` 로 실패한다.
