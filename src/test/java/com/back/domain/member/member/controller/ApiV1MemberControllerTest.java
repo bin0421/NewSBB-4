@@ -90,4 +90,30 @@ public class ApiV1MemberControllerTest {
 
         assertThat(memberService.findByUsername("abc")).isEmpty();
     }
+
+    @Test
+    @DisplayName("회원가입, 이미 사용중인 username, 409")
+    void t3() throws Exception {
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/api/v1/members/join")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "username": "user1",
+                                            "password": "12345678",
+                                            "name": "무명"
+                                        }
+                                        """)
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1MemberController.class))
+                .andExpect(handler().methodName("join"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.resultCode").value("409-1"))
+                .andExpect(jsonPath("$.msg").value("user1(은)는 이미 사용중인 username 입니다."))
+                .andExpect(jsonPath("$.data").value(nullValue()));
+    }
 }

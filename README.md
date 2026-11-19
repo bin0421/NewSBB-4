@@ -172,3 +172,13 @@
   - 검증 실패는 이미 있는 `GlobalExceptionHandler` 의 `MethodArgumentNotValidException` 처리가 400 으로 바꾼다.
   - 요구사항에는 `@Size` 만 있지만, 글·댓글처럼 `null`·공백만 있는 값도 막기 위해 `@NotBlank` 를 함께 붙였다. 008-1 테스트는 짧은 값이라 `Size` 위반만 나온다.
   - 결과 : `ApiV1MemberControllerTest.t2` 통과, 테스트 18개 모두 통과.
+
+### 009-1 username 중복 테스트 추가 (실패)
+
+- **링크**
+- **원인** : 이미 있는 username 으로 가입하면 409 와 안내 메시지로 응답해야 한다. 먼저 테스트로 정한다.
+- **작업**
+  - 추가 : 테스트 `ApiV1MemberControllerTest.t3` — 샘플 회원 `user1` 과 같은 username 으로 가입 요청 후 처리한 메서드(`join`), 409, `resultCode` `"409-1"`, `msg` `"user1(은)는 이미 사용중인 username 입니다."`, `data` `null` 확인
+- **설명**
+  - 중복 메시지의 `%s` 에는 username 을 넣는다.
+  - 실패 확인 : 서비스가 중복을 검사하지 않아 INSERT 까지 가고, 005 에서 건 DB 유니크 제약에 걸려 `DataIntegrityViolationException (Unique index or primary key violation)` 이 처리되지 않은 채 던져져 실패한다.
