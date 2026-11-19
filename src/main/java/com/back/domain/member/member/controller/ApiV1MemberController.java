@@ -52,9 +52,9 @@ public class ApiV1MemberController {
     @Transactional(readOnly = true)
     @Operation(summary = "내 정보")
     public MemberDto me(
-            @RequestParam int actorId
+            @RequestParam(required = false) Integer actorId
     ) {
-        Member actor = memberService.findById(actorId).get();
+        Member actor = memberService.getActor(actorId);
 
         return new MemberDto(actor);
     }

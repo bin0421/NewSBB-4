@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -73,6 +74,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(UnauthenticatedException.class)
+    public ResponseEntity<RsData<Void>> handle(UnauthenticatedException ex) {
+        return new ResponseEntity<>(
+                new RsData<>(
+                        "401-1",
+                        "로그인 후 이용해주세요."
+                ),
+                UNAUTHORIZED
+        );
+    }
+
     @Getter
     public static class MemberDuplicateUsernameException extends RuntimeException {
         private final String username;
@@ -80,6 +92,12 @@ public class GlobalExceptionHandler {
         public MemberDuplicateUsernameException(String username) {
             super("이미 사용중인 username : " + username);
             this.username = username;
+        }
+    }
+
+    public static class UnauthenticatedException extends RuntimeException {
+        public UnauthenticatedException() {
+            super("인증되지 않은 요청");
         }
     }
 }

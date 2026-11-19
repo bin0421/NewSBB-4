@@ -231,3 +231,19 @@
 - **설명**
   - 두 경우 모두 "누구인지 확인할 수 없음"이므로 같은 응답이다.
   - 실패 확인 : t5 는 필수 파라미터 누락으로 `Status expected:<401> but was:<400>`, t6 은 `Optional.get()` 의 `NoSuchElementException` 으로 `expected:<401> but was:<404>` 로 실패한다.
+
+### 011-2 actorId 없음·없는 회원 401
+
+- **링크**
+- **원인** : 011-1 테스트가 실패한다. `actorId` 가 없거나 없는 회원일 때를 처리하는 코드가 없다.
+- **작업**
+  - 추가 : `GlobalExceptionHandler.UnauthenticatedException` — 중첩 static 예외 클래스
+  - 추가 : `GlobalExceptionHandler.handle(UnauthenticatedException)` — 401, `"401-1"`, `"로그인 후 이용해주세요."`
+  - 추가 : `MemberService.getActor(actorId)` — `actorId` 가 `null` 이거나 없는 회원이면 `UnauthenticatedException`, 있으면 회원 반환
+  - 수정 : `ApiV1MemberController.me()`
+    - 이전 : `@RequestParam int actorId`, `memberService.findById(actorId).get()`
+    - 이후 : `@RequestParam(required = false) Integer actorId`, `memberService.getActor(actorId)`
+- **설명**
+  - `required = false` + `Integer` 로 받아야 `actorId` 가 없을 때 스프링이 400 을 내기 전에 액션까지 들어온다. 그 뒤 판단은 `getActor()` 한 곳에서 한다.
+  - 이후 글·댓글 작성·수정·삭제도 같은 방법(`@RequestParam(required = false) Integer actorId` → `getActor()`)으로 요청자를 얻는다. 파라미터를 명시적으로 받으므로 Swagger 문서에도 `actorId` 가 나온다.
+  - 결과 : `ApiV1MemberControllerTest.t5`, `t6` 통과, 테스트 22개 모두 통과.
