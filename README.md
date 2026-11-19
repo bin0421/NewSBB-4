@@ -87,3 +87,17 @@
   - 서버가 응답에 `Access-Control-Allow-Origin` 등을 붙여 주면 브라우저가 다른 출처의 요청 결과를 스크립트에 넘겨 준다.
   - `allowCredentials(true)` 와 함께 쓸 때는 출처를 `*` 로 둘 수 없어 정확한 출처를 적는다(68강).
   - 결과 : 기존 테스트 15개 통과.
+
+### 005 회원 엔티티
+
+- **링크**
+- **원인** : 회원가입·내 정보·작성자 기능을 만들려면 회원을 저장할 엔티티가 있어야 한다.
+- **작업**
+  - 추가 : 엔티티 `Member` — `username`(유니크), `password`, `name`, 생성자 `Member(username, password, name)`
+  - 추가 : `MemberRepository` — `findByUsername(username)`
+- **설명**
+  - `BaseEntity` 를 상속해 `id`, `createDate`, `modifyDate` 를 글·댓글과 같은 방식으로 갖는다.
+  - `@Column(unique = true)` 로 DB 에도 username 유니크 제약을 건다. 중복 가입은 009 에서 서비스가 먼저 검사해 409 로 응답하고, DB 제약은 마지막 안전장치다.
+  - 비밀번호 암호화는 이번 범위(68강까지)에 없으므로 평문으로 저장한다.
+  - 엔티티 뼈대만 만드는 단계라 테스트 없이 커밋한다. (NewSBB-3 의 003·004 엔티티 단계와 같음)
+  - 결과 : 기존 테스트 15개 통과.
