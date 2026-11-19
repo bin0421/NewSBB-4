@@ -397,3 +397,21 @@
   - 추가 : 테스트 `ApiV1PostCommentControllerTest.t10` — `user2` 로 1번 댓글 수정 요청, 403 응답 확인, 내용이 `"댓글 1-1"` 그대로인지 확인
 - **설명**
   - 실패 확인 : 수정 액션이 요청자를 보지 않아 t9·t10 모두 내용이 바뀌고 `Status expected:<401>(<403>) but was:<200>` 로 실패한다.
+
+### 017-2 댓글 수정 권한
+
+- **링크**
+- **원인** : 017-1 테스트가 실패한다. 댓글 수정 액션이 요청자를 확인하지 않는다.
+- **작업**
+  - 추가 : `PostComment.checkActorCanModify(actor)` — 댓글 작성자가 아니면 `AccessDeniedException`
+  - 수정 : `ApiV1PostCommentController.modify()`
+    - 이전 : `modify(postId, id, reqBody)` — 댓글을 찾아 바로 수정
+    - 이후 : `modify(postId, id, actorId, reqBody)` — `getActor()`(401) → 글·댓글 찾기(404) → `checkActorCanModify()`(403) → 수정
+- **설명**
+  - 이로써 `actorId` 가 필요한 7개 액션(내 정보, 글 작성·수정·삭제, 댓글 작성·수정·삭제)이 모두 같은 순서(요청자 확인 → 대상 찾기 → 권한 확인 → 처리)로 동작한다.
+  - 결과 : `ApiV1PostCommentControllerTest.t9`, `t10` 통과. 테스트 34개(샘플 데이터 4, 회원 6, 글 14, 댓글 10)가 모두 통과한다.
+  - 실행 확인 : 앱을 8094 포트(메모리 DB)로 띄워 실제로 호출했다.
+    - 회원가입 201 / 중복 409(`user1(은)는 이미 사용중인 username 입니다.`) / 길이 위반 400, 내 정보 200(비밀번호 없음) / `actorId` 없음·없는 회원 401
+    - 글·댓글 응답에 `authorId`·`authorName` 이 샘플대로 나옴, `actorId=4`(user2)로 쓴 글·`actorId=5`(user3)로 쓴 댓글의 작성자가 요청자로 들어감
+    - 1번 글·1번 댓글(작성자 user1)을 user2 가 수정·삭제하면 403, user1 이 하면 200, 삭제 후 1번 글 조회 404
+    - Swagger 문서(`/v3/api-docs/apiV1`)에 `actorId` 파라미터가 7개 액션 모두에 나온다.
