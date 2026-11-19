@@ -4,6 +4,7 @@ import com.back.domain.member.member.entity.Member;
 import com.back.domain.member.member.repository.MemberRepository;
 import com.back.domain.post.post.entity.Post;
 import com.back.domain.post.post.repository.PostRepository;
+import com.back.domain.post.postComment.entity.PostComment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,5 +66,19 @@ public class BaseInitDataTest {
         assertThat(posts)
                 .extracting(post -> post.getAuthor().getUsername())
                 .containsExactly("user1", "user2", "user3");
+    }
+
+    @Test
+    @DisplayName("샘플 데이터 : 1~5번 댓글의 작성자는 user1, user2, user3, user1, user2")
+    void t4() {
+        List<PostComment> comments = postRepository.findAll()
+                .stream()
+                .flatMap(post -> post.getComments().stream())
+                .sorted(Comparator.comparingInt(PostComment::getId))
+                .toList();
+
+        assertThat(comments)
+                .extracting(comment -> comment.getAuthor().getUsername())
+                .containsExactly("user1", "user2", "user3", "user1", "user2");
     }
 }

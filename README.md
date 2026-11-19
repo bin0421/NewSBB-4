@@ -278,3 +278,16 @@
   - `LAZY` 이므로 작성자 정보는 `PostDto` 를 만들 때 읽힌다. 조회 액션들은 `@Transactional(readOnly = true)` 안이라 지연 로딩이 동작한다.
   - `actorId` 확인은 011 에서 만든 `getActor()` 를 그대로 쓴다. 그래서 `actorId` 가 없거나 없는 회원이면 글을 만들기 전에 401 이 나간다.
   - 결과 : `BaseInitDataTest.t3`, `ApiV1PostControllerTest.t1`·`t2`·`t4`·`t10` 통과, 테스트 24개 모두 통과.
+
+### 013-1 댓글 작성자 테스트 추가 (실패)
+
+- **링크**
+- **원인** : 모든 댓글에도 작성자가 있어야 하고, 댓글 작성은 `?actorId=회원번호` 의 회원이 작성자가 된다. 글(012-1)과 같은 내용을 댓글에 대해 먼저 테스트로 정한다.
+- **작업**
+  - 추가 : 테스트 `BaseInitDataTest.t4` — 1~5번 댓글(id 순)의 작성자 username 이 `user1`, `user2`, `user3`, `user1`, `user2` 인지 확인
+  - 수정 : 테스트 `ApiV1PostCommentControllerTest.t1`(다건), `t2`(단건) — 응답의 `authorId`, `authorName` 확인 (1번 댓글은 `user1`, `유저1`)
+  - 수정 : 테스트 `ApiV1PostCommentControllerTest.t3`(작성) — `user2` 로 1번 글(작성자 `user1`)에 댓글 작성, 응답 `data.authorId`·`data.authorName`(`유저2`)과 저장된 댓글의 작성자 확인
+  - 추가 : 테스트 `ApiV1PostCommentControllerTest.t6` — `actorId` 없이 작성 요청, 401, `"401-1"`, `"로그인 후 이용해주세요."` 확인, 1번 글의 댓글이 3건 그대로인지 확인
+- **설명**
+  - 작성 테스트는 일부러 글 작성자와 다른 회원(`user2`)으로 요청한다. 댓글 작성자가 글 작성자를 따라가지 않고 요청자로 정해지는지 확인하기 위해서다.
+  - 실패 확인 : `PostComment.getAuthor()` 가 없어 컴파일에 실패한다.

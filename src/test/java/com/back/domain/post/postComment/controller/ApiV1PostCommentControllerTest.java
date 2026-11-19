@@ -1,5 +1,7 @@
 package com.back.domain.post.postComment.controller;
 
+import com.back.domain.member.member.entity.Member;
+import com.back.domain.member.member.service.MemberService;
 import com.back.domain.post.post.entity.Post;
 import com.back.domain.post.post.service.PostService;
 import com.back.domain.post.postComment.entity.PostComment;
@@ -33,6 +35,8 @@ public class ApiV1PostCommentControllerTest {
     @Autowired
     private PostService postService;
     @Autowired
+    private MemberService memberService;
+    @Autowired
     private EntityManager em;
 
     @Test
@@ -62,6 +66,8 @@ public class ApiV1PostCommentControllerTest {
                     .andExpect(jsonPath("$[%d].id".formatted(i)).value(postComment.getId()))
                     .andExpect(jsonPath("$[%d].createDate".formatted(i)).value(Matchers.startsWith(postComment.getCreateDate().toString().substring(0, 20))))
                     .andExpect(jsonPath("$[%d].modifyDate".formatted(i)).value(Matchers.startsWith(postComment.getModifyDate().toString().substring(0, 20))))
+                    .andExpect(jsonPath("$[%d].authorId".formatted(i)).value(postComment.getAuthor().getId()))
+                    .andExpect(jsonPath("$[%d].authorName".formatted(i)).value(postComment.getAuthor().getName()))
                     .andExpect(jsonPath("$[%d].content".formatted(i)).value(postComment.getContent()));
         }
     }
@@ -80,6 +86,7 @@ public class ApiV1PostCommentControllerTest {
 
         Post post = postService.findById(postId).get();
         PostComment postComment = post.findCommentById(id).get();
+        Member author = memberService.findByUsername("user1").get();
 
         resultActions
                 .andExpect(handler().handlerType(ApiV1PostCommentController.class))
@@ -88,6 +95,8 @@ public class ApiV1PostCommentControllerTest {
                 .andExpect(jsonPath("$.id").value(postComment.getId()))
                 .andExpect(jsonPath("$.createDate").value(Matchers.startsWith(postComment.getCreateDate().toString().substring(0, 20))))
                 .andExpect(jsonPath("$.modifyDate").value(Matchers.startsWith(postComment.getModifyDate().toString().substring(0, 20))))
+                .andExpect(jsonPath("$.authorId").value(author.getId()))
+                .andExpect(jsonPath("$.authorName").value("유저1"))
                 .andExpect(jsonPath("$.content").value(postComment.getContent()));
     }
 
@@ -95,10 +104,12 @@ public class ApiV1PostCommentControllerTest {
     @DisplayName("댓글 작성")
     void t3() throws Exception {
         int postId = 1;
+        Member actor = memberService.findByUsername("user2").get();
 
         ResultActions resultActions = mvc
                 .perform(
                         post("/api/v1/posts/%d/comments".formatted(postId))
+                                .param("actorId", String.valueOf(actor.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
@@ -120,9 +131,41 @@ public class ApiV1PostCommentControllerTest {
                 .andExpect(jsonPath("$.data.id").value(postComment.getId()))
                 .andExpect(jsonPath("$.data.createDate").value(Matchers.startsWith(postComment.getCreateDate().toString().substring(0, 20))))
                 .andExpect(jsonPath("$.data.modifyDate").value(Matchers.startsWith(postComment.getModifyDate().toString().substring(0, 20))))
+                .andExpect(jsonPath("$.data.authorId").value(actor.getId()))
+                .andExpect(jsonPath("$.data.authorName").value("유저2"))
                 .andExpect(jsonPath("$.data.content").value("내용"));
 
         assertThat(postComment.getId()).isPositive();
+        assertThat(postComment.getAuthor()).isEqualTo(actor);
+    }
+
+    @Test
+    @DisplayName("댓글 작성, without actorId, 401")
+    void t6() throws Exception {
+        int postId = 1;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/api/v1/posts/%d/comments".formatted(postId))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "content": "내용"
+                                        }
+                                        """)
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostCommentController.class))
+                .andExpect(handler().methodName("write"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.resultCode").value("401-1"))
+                .andExpect(jsonPath("$.msg").value("로그인 후 이용해주세요."));
+
+        Post post = postService.findById(postId).get();
+
+        assertThat(post.getComments()).hasSize(3);
     }
 
     @Test
