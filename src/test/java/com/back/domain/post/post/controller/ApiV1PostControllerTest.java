@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -289,10 +290,12 @@ public class ApiV1PostControllerTest {
     @DisplayName("글 삭제")
     void t9() throws Exception {
         int id = 1;
+        Member actor = memberService.findByUsername("user1").get();
 
         ResultActions resultActions = mvc
                 .perform(
                         delete("/api/v1/posts/" + id)
+                                .param("actorId", String.valueOf(actor.getId()))
                 )
                 .andDo(print());
 
@@ -304,5 +307,50 @@ public class ApiV1PostControllerTest {
                 .andExpect(jsonPath("$.msg").value("%d번 글이 삭제되었습니다.".formatted(id)));
 
         assertThat(postService.count()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("글 삭제, without actorId, 401")
+    void t11() throws Exception {
+        int id = 1;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        delete("/api/v1/posts/" + id)
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("delete"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.resultCode").value("401-1"))
+                .andExpect(jsonPath("$.msg").value("로그인 후 이용해주세요."));
+
+        assertThat(postService.count()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("글 삭제, 작성자가 아닌 회원, 403")
+    void t12() throws Exception {
+        int id = 1;
+        Member actor = memberService.findByUsername("user2").get();
+
+        ResultActions resultActions = mvc
+                .perform(
+                        delete("/api/v1/posts/" + id)
+                                .param("actorId", String.valueOf(actor.getId()))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("delete"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value("403-1"))
+                .andExpect(jsonPath("$.msg").value("권한이 없습니다."))
+                .andExpect(jsonPath("$.data").value(nullValue()));
+
+        assertThat(postService.count()).isEqualTo(3);
     }
 }
