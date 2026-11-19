@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -204,10 +205,12 @@ public class ApiV1PostCommentControllerTest {
     void t5() throws Exception {
         int postId = 1;
         int id = 1;
+        Member actor = memberService.findByUsername("user1").get();
 
         ResultActions resultActions = mvc
                 .perform(
                         delete("/api/v1/posts/%d/comments/%d".formatted(postId, id))
+                                .param("actorId", String.valueOf(actor.getId()))
                 )
                 .andDo(print());
 
@@ -225,5 +228,62 @@ public class ApiV1PostCommentControllerTest {
 
         assertThat(post.findCommentById(id)).isEmpty();
         assertThat(post.getComments()).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("댓글 삭제, without actorId, 401")
+    void t7() throws Exception {
+        int postId = 1;
+        int id = 1;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        delete("/api/v1/posts/%d/comments/%d".formatted(postId, id))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostCommentController.class))
+                .andExpect(handler().methodName("delete"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.resultCode").value("401-1"))
+                .andExpect(jsonPath("$.msg").value("로그인 후 이용해주세요."));
+
+        em.flush();
+        em.clear();
+
+        Post post = postService.findById(postId).get();
+
+        assertThat(post.findCommentById(id)).isPresent();
+    }
+
+    @Test
+    @DisplayName("댓글 삭제, 작성자가 아닌 회원, 403")
+    void t8() throws Exception {
+        int postId = 1;
+        int id = 1;
+        Member actor = memberService.findByUsername("user2").get();
+
+        ResultActions resultActions = mvc
+                .perform(
+                        delete("/api/v1/posts/%d/comments/%d".formatted(postId, id))
+                                .param("actorId", String.valueOf(actor.getId()))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostCommentController.class))
+                .andExpect(handler().methodName("delete"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value("403-1"))
+                .andExpect(jsonPath("$.msg").value("권한이 없습니다."))
+                .andExpect(jsonPath("$.data").value(nullValue()));
+
+        em.flush();
+        em.clear();
+
+        Post post = postService.findById(postId).get();
+
+        assertThat(post.findCommentById(id)).isPresent();
     }
 }
