@@ -319,3 +319,20 @@
 - **설명**
   - 실패한 요청이 실제로 아무것도 지우지 않았는지 글 수로 함께 확인한다.
   - 실패 확인 : 삭제 액션이 요청자를 보지 않아 t11·t12 모두 글이 지워지고 `Status expected:<401>(<403>) but was:<200>` 로 실패한다. t9 는 지금도 통과한다.
+
+### 014-2 글 삭제 권한
+
+- **링크**
+- **원인** : 014-1 테스트가 실패한다. 삭제 액션이 요청자를 확인하지 않고, 권한이 없을 때의 예외·응답이 없다.
+- **작업**
+  - 추가 : `GlobalExceptionHandler.AccessDeniedException` — 중첩 static 예외 클래스
+  - 추가 : `GlobalExceptionHandler.handle(AccessDeniedException)` — 403, `"403-1"`, `"권한이 없습니다."`
+  - 추가 : `Post.checkActorCanDelete(actor)` — 작성자가 아니면 `AccessDeniedException`
+  - 수정 : `ApiV1PostController.delete()`
+    - 이전 : `delete(id)` — 글을 찾아 바로 삭제
+    - 이후 : `delete(id, actorId)` — `getActor()`(401) → 글 찾기(404) → `checkActorCanDelete()`(403) → 삭제
+- **설명**
+  - "누가 이 글을 지울 수 있나"는 글이 가장 잘 아는 규칙이라 엔티티 메서드로 둔다. 컨트롤러는 순서대로 부르기만 한다.
+  - 작성자 비교는 `equals()` 가 아니라 id 로 한다. `author` 는 `LAZY` 라 Hibernate 프록시일 수 있는데, `BaseEntity.equals()` 는 `getClass()` 가 같아야 같다고 보므로 프록시와 실제 객체를 다르게 판단할 수 있다. 프록시의 `getId()` 는 DB 조회 없이 id 를 돌려준다.
+  - `java.nio.file.AccessDeniedException` 과 이름이 같지만 중첩 클래스라 `GlobalExceptionHandler.AccessDeniedException` 으로 import 해 구분된다.
+  - 결과 : `ApiV1PostControllerTest.t11`, `t12` 통과, 테스트 28개 모두 통과.

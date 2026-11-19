@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
@@ -85,6 +86,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<RsData<Void>> handle(AccessDeniedException ex) {
+        return new ResponseEntity<>(
+                new RsData<>(
+                        "403-1",
+                        "권한이 없습니다."
+                ),
+                FORBIDDEN
+        );
+    }
+
     @Getter
     public static class MemberDuplicateUsernameException extends RuntimeException {
         private final String username;
@@ -98,6 +110,12 @@ public class GlobalExceptionHandler {
     public static class UnauthenticatedException extends RuntimeException {
         public UnauthenticatedException() {
             super("인증되지 않은 요청");
+        }
+    }
+
+    public static class AccessDeniedException extends RuntimeException {
+        public AccessDeniedException() {
+            super("권한 없는 요청");
         }
     }
 }
