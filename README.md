@@ -42,7 +42,7 @@
 
 ### 001 NewSBB-3 코드로 시작
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/94cc7979110c074eadaefbdaa9d90932b9e3b28e)**
 - **원인** : 회원 기능을 NewSBB-3 에서 완성한 글·댓글 API 위에 쌓는다.
 - **작업**
   - 추가 : NewSBB-3 마지막 커밋의 코드 트리 전체 (글·댓글 CRUD, 샘플 데이터, 테스트 15개)
@@ -53,7 +53,7 @@
 
 ### 002 SpringDoc 설정
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/099320f871e04c5da617fdafdfe6c27df6549fb4)**
 - **원인** : 57~63강. API 가 늘어나므로 주소·요청·응답을 브라우저에서 보고 바로 호출해 볼 수 있는 문서가 필요하다.
 - **작업**
   - 추가 : 의존성 `org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0`
@@ -67,7 +67,7 @@
 
 ### 003 홈 컨트롤러
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/7f9a66e46ca56021255cb181b6add589fd56ab12)**
 - **원인** : 60·63·65강. 서버 주소(`/`)로 들어왔을 때 서버 정보와 API 문서로 가는 길을 보여 줄 페이지, 브라우저에서 API 를 `fetch` 로 불러 보는 테스트 페이지가 필요하다.
 - **작업**
   - 추가 : `HomeController.main()` — `GET /`, 호스트 이름·주소와 API 문서 링크를 HTML 로 응답
@@ -79,7 +79,7 @@
 
 ### 004 CORS 설정
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/03527d65583de9bb0507fe45d2a161bb3ad1b722)**
 - **원인** : 67·68강. 다른 출처(codepen `https://cdpn.io`, 프론트 개발 서버 `http://localhost:3000`)의 페이지가 API 를 `fetch` 하면 브라우저가 CORS 정책으로 응답을 막는다.
 - **작업**
   - 추가 : `WebMvcConfig.addCorsMappings()` — `/api/**` 에 허용 출처 2곳, 메서드 GET·POST·PUT·DELETE·PATCH, 모든 헤더, 쿠키 포함 허용
@@ -90,7 +90,7 @@
 
 ### 005 회원 엔티티
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/b0b0ea40f98a91f2999ad7078232fba3a0d33003)**
 - **원인** : 회원가입·내 정보·작성자 기능을 만들려면 회원을 저장할 엔티티가 있어야 한다.
 - **작업**
   - 추가 : 엔티티 `Member` — `username`(유니크), `password`, `name`, 생성자 `Member(username, password, name)`
@@ -104,7 +104,7 @@
 
 ### 006-1 샘플 회원 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/c3e9b46b5063f68d31ec4c767165414b13416170)**
 - **원인** : 회원가입·내 정보·작성자 테스트에 쓸 회원이 처음부터 있어야 한다. 먼저 샘플 회원을 테스트로 정한다.
 - **작업**
   - 추가 : 테스트 `BaseInitDataTest.t2` — 회원이 생성 순서대로 `system`(시스템), `admin`(관리자), `user1`(유저1), `user2`(유저2), `user3`(유저3), `user4`(유저4) 이고 비밀번호가 모두 `12345678` 인지 확인
@@ -115,7 +115,7 @@
 
 ### 006-2 샘플 회원 6명
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/ec38d1d2f7c35e5477213901f7b86494024dbfaa)**
 - **원인** : 006-1 테스트가 실패한다. 샘플 회원을 만드는 코드와 회원 서비스가 없다.
 - **작업**
   - 추가 : `MemberService` — `count()`, `join(username, password, name)`
@@ -129,7 +129,7 @@
 
 ### 007-1 회원가입 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/26dd3a3abe95b199483b6dc25310bcbd8f070ee7)**
 - **원인** : `POST /api/v1/members/join` 회원가입이 필요하다. 먼저 응답과 결과를 테스트로 정한다.
 - **작업**
   - 추가 : 테스트 `ApiV1MemberControllerTest.t1` — `{"username": "usernew", "password": "12345678", "name": "무명"}` 으로 가입 요청 후 처리한 메서드(`join`), 201, `resultCode` `"201-1"`, `msg` `"무명님 환영합니다. 회원가입이 완료되었습니다."`, `data` `null` 확인, username 으로 다시 찾은 회원의 비밀번호·이름 확인
@@ -139,7 +139,7 @@
 
 ### 007-2 회원가입
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/27ca915e3c09dfa9e3f9c74256e24aeff96ec8cc)**
 - **원인** : 007-1 테스트가 실패한다. 회원 컨트롤러와 username 으로 회원을 찾는 메서드가 없다.
 - **작업**
   - 추가 : `ApiV1MemberController.join(reqBody)` — `POST /api/v1/members/join`, 요청 본문 `MemberJoinReqBody(username, password, name)`, 응답 `RsData<Void>`
@@ -152,7 +152,7 @@
 
 ### 008-1 회원가입 요청 검증 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/cbd2e9fb41f47f8c96465cef01355a294d30811c)**
 - **원인** : 요구사항의 길이 제약 username(4~30), password(8~30), name(2~30) 을 어기면 가입되면 안 된다. 먼저 테스트로 정한다.
 - **작업**
   - 추가 : 테스트 `ApiV1MemberControllerTest.t2` — 세 필드 모두 최소 길이보다 1 짧게(`abc`, `1234567`, `무`) 요청 후 처리한 메서드(`join`), 400, `resultCode` `"400-1"`, 필드별 `Size` 위반 메시지 3줄 확인, `abc` 회원이 생기지 않았는지 확인
@@ -163,7 +163,7 @@
 
 ### 008-2 회원가입 요청 검증
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/9f766236929733a641a7e1c49234370a51268e13)**
 - **원인** : 008-1 테스트가 실패한다. 회원가입 요청 본문에 검증이 없다.
 - **작업**
   - 수정 : `MemberJoinReqBody` 필드에 `@NotBlank` + `@Size(username 4~30, password 8~30, name 2~30)`
@@ -175,7 +175,7 @@
 
 ### 009-1 username 중복 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/6b775b092386a5f818e950e1cf42cd18deb8b483)**
 - **원인** : 이미 있는 username 으로 가입하면 409 와 안내 메시지로 응답해야 한다. 먼저 테스트로 정한다.
 - **작업**
   - 추가 : 테스트 `ApiV1MemberControllerTest.t3` — 샘플 회원 `user1` 과 같은 username 으로 가입 요청 후 처리한 메서드(`join`), 409, `resultCode` `"409-1"`, `msg` `"user1(은)는 이미 사용중인 username 입니다."`, `data` `null` 확인
@@ -185,7 +185,7 @@
 
 ### 009-2 username 중복 409
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/7926d857ba8711a4b20f0fa5698b3f5204c4bc0c)**
 - **원인** : 009-1 테스트가 실패한다. 중복을 미리 검사하지 않아 DB 제약 위반 예외가 그대로 터진다.
 - **작업**
   - 추가 : `GlobalExceptionHandler.MemberDuplicateUsernameException` — 중첩 static 예외 클래스, 중복된 `username` 을 담는다
@@ -198,7 +198,7 @@
 
 ### 010-1 내 정보 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/e72414a3cace1722e94c94744cb85c4d3cefe7ff)**
 - **원인** : `GET /api/v1/members/me?actorId=회원번호` 로 요청한 회원 자신의 정보를 볼 수 있어야 한다. 먼저 응답 형식을 테스트로 정한다.
 - **작업**
   - 추가 : 테스트 `ApiV1MemberControllerTest.t4` — `user1` 의 id 를 `actorId` 로 요청 후 처리한 메서드(`me`), 200, `id`·`createDate`·`updateDate`·`username`·`name` 확인, `password` 필드가 없는지 확인
@@ -210,7 +210,7 @@
 
 ### 010-2 내 정보
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/64f9b41dd8a2b0a98087c0f9459a1ecf271ed809)**
 - **원인** : 010-1 테스트가 실패한다. 내 정보 액션과 회원 응답 DTO 가 없다.
 - **작업**
   - 추가 : `MemberDto(id, createDate, updateDate, username, name)` — 비밀번호 필드 없음
@@ -223,7 +223,7 @@
 
 ### 011-1 내 정보 401 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/5f54cfff4beeaec0611f0e68eef9690e1126c76b)**
 - **원인** : `actorId` 가 필요한 액션에서 `actorId` 가 없거나 없는 회원이면 401 로 응답해야 한다. 내 정보로 먼저 정한다.
 - **작업**
   - 추가 : 테스트 `ApiV1MemberControllerTest.t5` — `actorId` 없이 요청, 401, `"401-1"`, `"로그인 후 이용해주세요."`, `data` `null` 확인
@@ -234,7 +234,7 @@
 
 ### 011-2 actorId 없음·없는 회원 401
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/9d8e5eb4ed46f49b758b72c81c9cbfe7bcaa2810)**
 - **원인** : 011-1 테스트가 실패한다. `actorId` 가 없거나 없는 회원일 때를 처리하는 코드가 없다.
 - **작업**
   - 추가 : `GlobalExceptionHandler.UnauthenticatedException` — 중첩 static 예외 클래스
@@ -250,7 +250,7 @@
 
 ### 012-1 글 작성자 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/5b975cb12df2c9ba0c7182186557c3b171c507e0)**
 - **원인** : 모든 글에는 작성자(`author`)가 있어야 하고, 글 작성은 `?actorId=회원번호` 의 회원이 작성자가 된다. 샘플 글 작성자, 응답의 작성자 정보, 작성 시 작성자, `actorId` 없는 작성 401 을 먼저 테스트로 정한다.
 - **작업**
   - 추가 : 테스트 `BaseInitDataTest.t3` — 1~3번 글의 작성자 username 이 `user1`, `user2`, `user3` 인지 확인
@@ -265,7 +265,7 @@
 
 ### 012-2 글 작성자
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/569c1cee05c78ba4f4fd7558946bf09f05cb385c)**
 - **원인** : 012-1 테스트가 실패한다. 글에 작성자 필드가 없고, 작성 API 가 요청자를 받지 않는다.
 - **작업**
   - 추가 : `Post.author` — `@ManyToOne(fetch = LAZY) Member`
@@ -281,7 +281,7 @@
 
 ### 013-1 댓글 작성자 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/b46d4245c0dc94f5625c47891d52bd09ebbeffe9)**
 - **원인** : 모든 댓글에도 작성자가 있어야 하고, 댓글 작성은 `?actorId=회원번호` 의 회원이 작성자가 된다. 글(012-1)과 같은 내용을 댓글에 대해 먼저 테스트로 정한다.
 - **작업**
   - 추가 : 테스트 `BaseInitDataTest.t4` — 1~5번 댓글(id 순)의 작성자 username 이 `user1`, `user2`, `user3`, `user1`, `user2` 인지 확인
@@ -294,7 +294,7 @@
 
 ### 013-2 댓글 작성자
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/490a470597a60033fd785c07b9d25384f9510ed3)**
 - **원인** : 013-1 테스트가 실패한다. 댓글에 작성자 필드가 없고, 댓글 작성 API 가 요청자를 받지 않는다.
 - **작업**
   - 추가 : `PostComment.author` — `@ManyToOne(fetch = LAZY) Member`
@@ -310,7 +310,7 @@
 
 ### 014-1 글 삭제 권한 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/a21dab90477e298b3c201b2f7516fe147c7994b0)**
 - **원인** : 글은 작성자 본인만 지울 수 있어야 한다. `actorId` 가 없으면 401, 작성자가 아니면 403 이다. 먼저 테스트로 정한다.
 - **작업**
   - 수정 : 테스트 `ApiV1PostControllerTest.t9`(삭제) — 1번 글의 작성자 `user1` 을 `actorId` 로 붙여 요청
@@ -322,7 +322,7 @@
 
 ### 014-2 글 삭제 권한
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/11a3366fe9021c70dae4ee6f3382fe2ae7c44e3c)**
 - **원인** : 014-1 테스트가 실패한다. 삭제 액션이 요청자를 확인하지 않고, 권한이 없을 때의 예외·응답이 없다.
 - **작업**
   - 추가 : `GlobalExceptionHandler.AccessDeniedException` — 중첩 static 예외 클래스
@@ -339,7 +339,7 @@
 
 ### 015-1 글 수정 권한 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/d4fb06c1c9ef6972123684d5fbcf58a5afeec7fa)**
 - **원인** : 글은 작성자 본인만 고칠 수 있어야 한다. 삭제(014)와 같은 규칙을 수정에 대해 먼저 테스트로 정한다.
 - **작업**
   - 수정 : 테스트 `ApiV1PostControllerTest.t8`(수정) — 1번 글의 작성자 `user1` 을 `actorId` 로 붙여 요청
@@ -350,7 +350,7 @@
 
 ### 015-2 글 수정 권한
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/c75f33f073a3810cc500506ecdf5ab813b8d2601)**
 - **원인** : 015-1 테스트가 실패한다. 수정 액션이 요청자를 확인하지 않는다.
 - **작업**
   - 추가 : `Post.checkActorCanModify(actor)` — 작성자가 아니면 `AccessDeniedException`
@@ -363,7 +363,7 @@
 
 ### 016-1 댓글 삭제 권한 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/1abceb64137ea4dda0f0bdc89a78381597a99099)**
 - **원인** : 댓글은 댓글 작성자 본인만 지울 수 있어야 한다. 먼저 테스트로 정한다.
 - **작업**
   - 수정 : 테스트 `ApiV1PostCommentControllerTest.t5`(삭제) — 1번 댓글의 작성자 `user1` 을 `actorId` 로 붙여 요청
@@ -375,7 +375,7 @@
 
 ### 016-2 댓글 삭제 권한
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/11af798ce9b91021a756cd506bf59b484aeeb42d)**
 - **원인** : 016-1 테스트가 실패한다. 댓글 삭제 액션이 요청자를 확인하지 않는다.
 - **작업**
   - 추가 : `PostComment.checkActorCanDelete(actor)` — 댓글 작성자가 아니면 `AccessDeniedException`
@@ -389,7 +389,7 @@
 
 ### 017-1 댓글 수정 권한 테스트 추가 (실패)
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/bfee69d9750b0f4cf58d3ca6d52a15b24af144ac)**
 - **원인** : 댓글은 댓글 작성자 본인만 고칠 수 있어야 한다. 먼저 테스트로 정한다.
 - **작업**
   - 수정 : 테스트 `ApiV1PostCommentControllerTest.t4`(수정) — 1번 댓글의 작성자 `user1` 을 `actorId` 로 붙여 요청
@@ -400,7 +400,7 @@
 
 ### 017-2 댓글 수정 권한
 
-- **링크**
+- **[링크](https://github.com/bin0421/NewSBB-4/commit/c1695a4b92e5f4ac7f2d5de54e5415007510c498)**
 - **원인** : 017-1 테스트가 실패한다. 댓글 수정 액션이 요청자를 확인하지 않는다.
 - **작업**
   - 추가 : `PostComment.checkActorCanModify(actor)` — 댓글 작성자가 아니면 `AccessDeniedException`
