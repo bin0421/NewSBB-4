@@ -1,6 +1,7 @@
 package com.back.global.globalExceptionHandler;
 
 import com.back.global.rsData.RsData;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,6 +14,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @ControllerAdvice
@@ -58,5 +60,26 @@ public class GlobalExceptionHandler {
                 ),
                 BAD_REQUEST
         );
+    }
+
+    @ExceptionHandler(MemberDuplicateUsernameException.class)
+    public ResponseEntity<RsData<Void>> handle(MemberDuplicateUsernameException ex) {
+        return new ResponseEntity<>(
+                new RsData<>(
+                        "409-1",
+                        "%s(은)는 이미 사용중인 username 입니다.".formatted(ex.getUsername())
+                ),
+                CONFLICT
+        );
+    }
+
+    @Getter
+    public static class MemberDuplicateUsernameException extends RuntimeException {
+        private final String username;
+
+        public MemberDuplicateUsernameException(String username) {
+            super("이미 사용중인 username : " + username);
+            this.username = username;
+        }
     }
 }

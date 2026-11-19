@@ -182,3 +182,16 @@
 - **설명**
   - 중복 메시지의 `%s` 에는 username 을 넣는다.
   - 실패 확인 : 서비스가 중복을 검사하지 않아 INSERT 까지 가고, 005 에서 건 DB 유니크 제약에 걸려 `DataIntegrityViolationException (Unique index or primary key violation)` 이 처리되지 않은 채 던져져 실패한다.
+
+### 009-2 username 중복 409
+
+- **링크**
+- **원인** : 009-1 테스트가 실패한다. 중복을 미리 검사하지 않아 DB 제약 위반 예외가 그대로 터진다.
+- **작업**
+  - 추가 : `GlobalExceptionHandler.MemberDuplicateUsernameException` — 중첩 static 예외 클래스, 중복된 `username` 을 담는다
+  - 추가 : `GlobalExceptionHandler.handle(MemberDuplicateUsernameException)` — 409, `"409-1"`, `"%s(은)는 이미 사용중인 username 입니다."`
+  - 수정 : `MemberService.join()` — 저장 전에 `findByUsername()` 으로 검사해 있으면 `MemberDuplicateUsernameException` 을 던짐
+- **설명**
+  - 요구사항의 클래스 이름 `com.back.global.GlobalExceptionHandler.MemberDuplicateUsernameException` 을 "GlobalExceptionHandler 안의 중첩 클래스"로 해석했다. 패키지는 NewSBB-3 의 `com.back.global.globalExceptionHandler` 그대로 둔다.
+  - 예외는 username 만 들고, 사용자에게 보일 문구는 핸들러가 만든다. 응답 형식을 한 곳에서 관리하기 위해서다.
+  - 결과 : `ApiV1MemberControllerTest.t3` 통과, 테스트 19개 모두 통과.
