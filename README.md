@@ -76,3 +76,14 @@
   - 002 에서 기본 응답 타입을 JSON 으로 바꿨으므로, HTML 을 돌려주는 액션은 `produces = TEXT_HTML_VALUE` 로 직접 지정한다(63강).
   - `fetch` 주소는 상대 경로(`/api/v1/posts`)라 같은 서버에서 열면 CORS 문제가 없다(65-3).
   - 결과 : 기존 테스트 15개 통과.
+
+### 004 CORS 설정
+
+- **링크**
+- **원인** : 67·68강. 다른 출처(codepen `https://cdpn.io`, 프론트 개발 서버 `http://localhost:3000`)의 페이지가 API 를 `fetch` 하면 브라우저가 CORS 정책으로 응답을 막는다.
+- **작업**
+  - 추가 : `WebMvcConfig.addCorsMappings()` — `/api/**` 에 허용 출처 2곳, 메서드 GET·POST·PUT·DELETE·PATCH, 모든 헤더, 쿠키 포함 허용
+- **설명**
+  - 서버가 응답에 `Access-Control-Allow-Origin` 등을 붙여 주면 브라우저가 다른 출처의 요청 결과를 스크립트에 넘겨 준다.
+  - `allowCredentials(true)` 와 함께 쓸 때는 출처를 `*` 로 둘 수 없어 정확한 출처를 적는다(68강).
+  - 결과 : 기존 테스트 15개 통과.
