@@ -262,3 +262,19 @@
   - 작성자를 응답에 `authorId`·`authorName` 으로 내보내기로 했다. API 만으로 작성자가 맞게 들어갔는지 확인할 수 있다.
   - 검증 실패 테스트(t5~t7)는 `actorId` 없이 그대로 둔다. 요청 본문 검증이 액션 실행 전에 일어나므로 400 이 먼저 나간다.
   - 실패 확인 : `Post.getAuthor()` 가 없어 컴파일에 실패한다.
+
+### 012-2 글 작성자
+
+- **링크**
+- **원인** : 012-1 테스트가 실패한다. 글에 작성자 필드가 없고, 작성 API 가 요청자를 받지 않는다.
+- **작업**
+  - 추가 : `Post.author` — `@ManyToOne(fetch = LAZY) Member`
+  - 수정 : 생성자 `Post(title, content)` → `Post(author, title, content)`, `PostService.write(title, content)` → `write(author, title, content)`
+  - 수정 : `PostDto` 에 `authorId`, `authorName` 추가
+  - 수정 : `BaseInitData.work2()` — 1~3번 글을 `user1`~`user3` 이 작성
+  - 수정 : `ApiV1PostController.write()` — `@RequestParam(required = false) Integer actorId` 를 받아 `memberService.getActor(actorId)` 를 작성자로 사용
+- **설명**
+  - 글:회원 = N:1 이므로 글 쪽에 외래키(`author_id`)를 둔다. 회원 쪽 글 목록은 아직 필요 없어 단방향으로 둔다.
+  - `LAZY` 이므로 작성자 정보는 `PostDto` 를 만들 때 읽힌다. 조회 액션들은 `@Transactional(readOnly = true)` 안이라 지연 로딩이 동작한다.
+  - `actorId` 확인은 011 에서 만든 `getActor()` 를 그대로 쓴다. 그래서 `actorId` 가 없거나 없는 회원이면 글을 만들기 전에 401 이 나간다.
+  - 결과 : `BaseInitDataTest.t3`, `ApiV1PostControllerTest.t1`·`t2`·`t4`·`t10` 통과, 테스트 24개 모두 통과.
