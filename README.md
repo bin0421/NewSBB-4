@@ -195,3 +195,15 @@
   - 요구사항의 클래스 이름 `com.back.global.GlobalExceptionHandler.MemberDuplicateUsernameException` 을 "GlobalExceptionHandler 안의 중첩 클래스"로 해석했다. 패키지는 NewSBB-3 의 `com.back.global.globalExceptionHandler` 그대로 둔다.
   - 예외는 username 만 들고, 사용자에게 보일 문구는 핸들러가 만든다. 응답 형식을 한 곳에서 관리하기 위해서다.
   - 결과 : `ApiV1MemberControllerTest.t3` 통과, 테스트 19개 모두 통과.
+
+### 010-1 내 정보 테스트 추가 (실패)
+
+- **링크**
+- **원인** : `GET /api/v1/members/me?actorId=회원번호` 로 요청한 회원 자신의 정보를 볼 수 있어야 한다. 먼저 응답 형식을 테스트로 정한다.
+- **작업**
+  - 추가 : 테스트 `ApiV1MemberControllerTest.t4` — `user1` 의 id 를 `actorId` 로 요청 후 처리한 메서드(`me`), 200, `id`·`createDate`·`updateDate`·`username`·`name` 확인, `password` 필드가 없는지 확인
+- **설명**
+  - 회원 id 를 숫자로 적지 않고 `findByUsername("user1")` 으로 찾아 쓴다. 샘플 회원 순서가 바뀌어도 테스트 뜻이 그대로다.
+  - 응답은 `RsData` 로 감싸지 않은 회원 정보 그대로다. (요구사항의 응답 본문, 글·댓글 단건조회와 같은 방식)
+  - 날짜 필드 이름은 요구사항대로 `updateDate` 이다. 값은 `BaseEntity.modifyDate` 와 비교한다.
+  - 실패 확인 : `/api/v1/members/me` 를 받는 액션이 없어 정적 리소스 핸들러(`ResourceHttpRequestHandler`)로 넘어가 `Handler type expected ... ApiV1MemberController` 로 실패한다.
