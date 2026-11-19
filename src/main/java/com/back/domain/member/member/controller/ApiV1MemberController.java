@@ -5,6 +5,9 @@ import com.back.domain.member.member.service.MemberService;
 import com.back.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +24,14 @@ public class ApiV1MemberController {
 
 
     public record MemberJoinReqBody(
+            @NotBlank
+            @Size(min = 4, max = 30)
             String username,
+            @NotBlank
+            @Size(min = 8, max = 30)
             String password,
+            @NotBlank
+            @Size(min = 2, max = 30)
             String name
     ) {
     }
@@ -31,7 +40,7 @@ public class ApiV1MemberController {
     @Transactional
     @Operation(summary = "회원가입")
     public RsData<Void> join(
-            @RequestBody MemberJoinReqBody reqBody
+            @RequestBody @Valid MemberJoinReqBody reqBody
     ) {
         Member member = memberService.join(reqBody.username, reqBody.password, reqBody.name);
 

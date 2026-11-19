@@ -160,3 +160,15 @@
   - 메시지 형식은 글 작성 검증(NewSBB-3 010)과 같은 `필드-제약-기본메시지` 를 정렬해 줄바꿈으로 이은 것이다.
   - 빈 문자열이 아니라 "짧은 값"으로 보내 `@Size` 경계만 확인한다.
   - 실패 확인 : 검증이 없어 그대로 가입되므로 `Status expected:<400> but was:<201>` 로 실패한다.
+
+### 008-2 회원가입 요청 검증
+
+- **링크**
+- **원인** : 008-1 테스트가 실패한다. 회원가입 요청 본문에 검증이 없다.
+- **작업**
+  - 수정 : `MemberJoinReqBody` 필드에 `@NotBlank` + `@Size(username 4~30, password 8~30, name 2~30)`
+  - 수정 : `join()` 의 `@RequestBody` 에 `@Valid`
+- **설명**
+  - 검증 실패는 이미 있는 `GlobalExceptionHandler` 의 `MethodArgumentNotValidException` 처리가 400 으로 바꾼다.
+  - 요구사항에는 `@Size` 만 있지만, 글·댓글처럼 `null`·공백만 있는 값도 막기 위해 `@NotBlank` 를 함께 붙였다. 008-1 테스트는 짧은 값이라 `Size` 위반만 나온다.
+  - 결과 : `ApiV1MemberControllerTest.t2` 통과, 테스트 18개 모두 통과.
