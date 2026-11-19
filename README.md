@@ -126,3 +126,13 @@
   - 회원을 글보다 먼저 만들어 회원 id 가 1(system)~6(user4) 으로 고정되고, 이후 글·댓글 작성자로 바로 쓸 수 있다.
   - 각 작업은 자기 데이터가 이미 있으면 건너뛴다. 개발 DB(파일)에 이미 글이 있어도 회원만 따로 채울 수 있다.
   - 결과 : `BaseInitDataTest.t2` 통과, 테스트 16개 모두 통과.
+
+### 007-1 회원가입 테스트 추가 (실패)
+
+- **링크**
+- **원인** : `POST /api/v1/members/join` 회원가입이 필요하다. 먼저 응답과 결과를 테스트로 정한다.
+- **작업**
+  - 추가 : 테스트 `ApiV1MemberControllerTest.t1` — `{"username": "usernew", "password": "12345678", "name": "무명"}` 으로 가입 요청 후 처리한 메서드(`join`), 201, `resultCode` `"201-1"`, `msg` `"무명님 환영합니다. 회원가입이 완료되었습니다."`, `data` `null` 확인, username 으로 다시 찾은 회원의 비밀번호·이름 확인
+- **설명**
+  - 환영 메시지의 `%s` 에는 이름(`name`)을 넣는다.
+  - 실패 확인 : `ApiV1MemberController` 와 `MemberService.findByUsername()` 이 없어 컴파일에 실패한다.
