@@ -207,3 +207,16 @@
   - 응답은 `RsData` 로 감싸지 않은 회원 정보 그대로다. (요구사항의 응답 본문, 글·댓글 단건조회와 같은 방식)
   - 날짜 필드 이름은 요구사항대로 `updateDate` 이다. 값은 `BaseEntity.modifyDate` 와 비교한다.
   - 실패 확인 : `/api/v1/members/me` 를 받는 액션이 없어 정적 리소스 핸들러(`ResourceHttpRequestHandler`)로 넘어가 `Handler type expected ... ApiV1MemberController` 로 실패한다.
+
+### 010-2 내 정보
+
+- **링크**
+- **원인** : 010-1 테스트가 실패한다. 내 정보 액션과 회원 응답 DTO 가 없다.
+- **작업**
+  - 추가 : `MemberDto(id, createDate, updateDate, username, name)` — 비밀번호 필드 없음
+  - 추가 : `ApiV1MemberController.me(actorId)` — `GET /api/v1/members/me`, `@RequestParam int actorId`, 응답 `MemberDto`
+  - 추가 : `MemberService.findById(id)`
+- **설명**
+  - 엔티티를 그대로 내보내지 않고 DTO 로 바꿔 내보내므로, DTO 에 없는 비밀번호는 응답에 절대 실리지 않는다.
+  - 이 단계는 정상 요청만 통과시키는 최소 구현이다. `actorId` 가 없으면 400(필수 파라미터 누락), 없는 회원이면 404 가 나간다. 401 은 011 에서 테스트를 먼저 넣고 바꾼다.
+  - 결과 : `ApiV1MemberControllerTest.t4` 통과, 테스트 20개 모두 통과.
