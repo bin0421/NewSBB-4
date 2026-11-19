@@ -347,3 +347,16 @@
   - 추가 : 테스트 `ApiV1PostControllerTest.t14` — `user2` 로 1번 글 수정 요청, 403 응답 확인, 제목이 `"제목 1"` 그대로인지 확인
 - **설명**
   - 실패 확인 : 수정 액션이 요청자를 보지 않아 t13·t14 모두 글이 바뀌고 `Status expected:<401>(<403>) but was:<200>` 로 실패한다.
+
+### 015-2 글 수정 권한
+
+- **링크**
+- **원인** : 015-1 테스트가 실패한다. 수정 액션이 요청자를 확인하지 않는다.
+- **작업**
+  - 추가 : `Post.checkActorCanModify(actor)` — 작성자가 아니면 `AccessDeniedException`
+  - 수정 : `ApiV1PostController.modify()`
+    - 이전 : `modify(id, reqBody)` — 글을 찾아 바로 수정
+    - 이후 : `modify(id, actorId, reqBody)` — `getActor()`(401) → 글 찾기(404) → `checkActorCanModify()`(403) → 수정
+- **설명**
+  - 지금은 수정·삭제 규칙이 같지만(작성자 본인) 메서드를 나눠 둔다. 나중에 "관리자는 삭제만 가능" 같은 규칙이 생기면 한쪽만 바꾸면 된다.
+  - 결과 : `ApiV1PostControllerTest.t13`, `t14` 통과, 테스트 30개 모두 통과.
