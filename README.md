@@ -50,3 +50,17 @@
 - **설명**
   - `git archive` 로 커밋 시점의 파일만 가져왔다. 이전 히스토리는 [NewSBB-3](https://github.com/bin0421/NewSBB-3) 에서 본다.
   - 결과 : 테스트 15개(샘플 데이터 1, 글 9, 댓글 5)가 모두 통과한다.
+
+### 002 SpringDoc 설정
+
+- **링크**
+- **원인** : 57~63강. API 가 늘어나므로 주소·요청·응답을 브라우저에서 보고 바로 호출해 볼 수 있는 문서가 필요하다.
+- **작업**
+  - 추가 : 의존성 `org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0`
+  - 추가 : `SpringDocConfig` — `@OpenAPIDefinition`(제목·버전·설명), 그룹 `apiV1`(`/api/v1/**`), 그룹 `home`(`/api/**` 제외)
+  - 추가 : 글·댓글 컨트롤러에 `@Tag`, 액션마다 `@Operation(summary)`
+  - 추가 : `application.yaml` 의 `springdoc.default-produces-media-type: application/json;charset=UTF-8`
+- **설명**
+  - `/swagger-ui/index.html` 에서 문서를 본다. 그룹을 나눠 API 와 그 밖의 주소(홈 등)를 따로 볼 수 있다.
+  - 응답 타입을 지정하지 않으면 문서의 응답 예시가 `*/*` 로 나온다. 액션마다 `produces` 를 붙이는 대신(62-1) 설정 한 줄로 기본 타입을 JSON 으로 바꾼다(62-2).
+  - 결과 : 기존 테스트 15개 통과.
