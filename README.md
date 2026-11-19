@@ -136,3 +136,16 @@
 - **설명**
   - 환영 메시지의 `%s` 에는 이름(`name`)을 넣는다.
   - 실패 확인 : `ApiV1MemberController` 와 `MemberService.findByUsername()` 이 없어 컴파일에 실패한다.
+
+### 007-2 회원가입
+
+- **링크**
+- **원인** : 007-1 테스트가 실패한다. 회원 컨트롤러와 username 으로 회원을 찾는 메서드가 없다.
+- **작업**
+  - 추가 : `ApiV1MemberController.join(reqBody)` — `POST /api/v1/members/join`, 요청 본문 `MemberJoinReqBody(username, password, name)`, 응답 `RsData<Void>`
+  - 추가 : `MemberService.findByUsername(username)`
+- **설명**
+  - 응답 본문의 `data` 가 없으므로 `RsData<Void>` 를 쓴다. `RsData(resultCode, msg)` 생성자가 `data` 를 `null` 로 채우고, Jackson 은 `null` 필드도 `"data": null` 로 내보낸다.
+  - 상태 코드 201 은 `ResponseAspect` 가 `resultCode` 앞부분으로 정한다.
+  - 요청 검증과 중복 검사는 다음 단계에서 테스트를 먼저 넣고 더한다.
+  - 결과 : `ApiV1MemberControllerTest.t1` 통과, 테스트 17개 모두 통과.
