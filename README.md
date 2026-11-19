@@ -372,3 +372,17 @@
 - **설명**
   - 댓글 삭제는 고아 제거로 flush 때 DELETE 되므로, t5 처럼 `flush()`·`clear()` 뒤 DB 에서 다시 읽어 "지워지지 않았음"을 확인한다.
   - 실패 확인 : 삭제 액션이 요청자를 보지 않아 t7·t8 모두 댓글이 지워지고 `Status expected:<401>(<403>) but was:<200>` 로 실패한다.
+
+### 016-2 댓글 삭제 권한
+
+- **링크**
+- **원인** : 016-1 테스트가 실패한다. 댓글 삭제 액션이 요청자를 확인하지 않는다.
+- **작업**
+  - 추가 : `PostComment.checkActorCanDelete(actor)` — 댓글 작성자가 아니면 `AccessDeniedException`
+  - 수정 : `ApiV1PostCommentController.delete()`
+    - 이전 : `delete(postId, id)` — 댓글을 찾아 바로 삭제
+    - 이후 : `delete(postId, id, actorId)` — `getActor()`(401) → 글·댓글 찾기(404) → `checkActorCanDelete()`(403) → 삭제
+- **설명**
+  - 권한은 댓글 작성자 기준이다. 글 작성자라도 다른 사람의 댓글은 지울 수 없다. (요구사항 "댓글 삭제 시 작성자 본인이어야 함")
+  - 글과 같은 이유로 작성자 비교는 id 로 한다.
+  - 결과 : `ApiV1PostCommentControllerTest.t7`, `t8` 통과, 테스트 32개 모두 통과.
