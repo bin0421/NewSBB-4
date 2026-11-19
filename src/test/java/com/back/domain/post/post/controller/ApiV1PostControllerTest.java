@@ -259,10 +259,12 @@ public class ApiV1PostControllerTest {
     @DisplayName("글 수정")
     void t8() throws Exception {
         int id = 1;
+        Member actor = memberService.findByUsername("user1").get();
 
         ResultActions resultActions = mvc
                 .perform(
                         put("/api/v1/posts/" + id)
+                                .param("actorId", String.valueOf(actor.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
@@ -352,5 +354,68 @@ public class ApiV1PostControllerTest {
                 .andExpect(jsonPath("$.data").value(nullValue()));
 
         assertThat(postService.count()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("글 수정, without actorId, 401")
+    void t13() throws Exception {
+        int id = 1;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        put("/api/v1/posts/" + id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "title": "제목 new",
+                                            "content": "내용 new"
+                                        }
+                                        """)
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("modify"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.resultCode").value("401-1"))
+                .andExpect(jsonPath("$.msg").value("로그인 후 이용해주세요."));
+
+        Post post = postService.findById(id).get();
+
+        assertThat(post.getTitle()).isEqualTo("제목 1");
+    }
+
+    @Test
+    @DisplayName("글 수정, 작성자가 아닌 회원, 403")
+    void t14() throws Exception {
+        int id = 1;
+        Member actor = memberService.findByUsername("user2").get();
+
+        ResultActions resultActions = mvc
+                .perform(
+                        put("/api/v1/posts/" + id)
+                                .param("actorId", String.valueOf(actor.getId()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "title": "제목 new",
+                                            "content": "내용 new"
+                                        }
+                                        """)
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("modify"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value("403-1"))
+                .andExpect(jsonPath("$.msg").value("권한이 없습니다."))
+                .andExpect(jsonPath("$.data").value(nullValue()));
+
+        Post post = postService.findById(id).get();
+
+        assertThat(post.getTitle()).isEqualTo("제목 1");
     }
 }

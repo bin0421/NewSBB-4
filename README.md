@@ -336,3 +336,14 @@
   - 작성자 비교는 `equals()` 가 아니라 id 로 한다. `author` 는 `LAZY` 라 Hibernate 프록시일 수 있는데, `BaseEntity.equals()` 는 `getClass()` 가 같아야 같다고 보므로 프록시와 실제 객체를 다르게 판단할 수 있다. 프록시의 `getId()` 는 DB 조회 없이 id 를 돌려준다.
   - `java.nio.file.AccessDeniedException` 과 이름이 같지만 중첩 클래스라 `GlobalExceptionHandler.AccessDeniedException` 으로 import 해 구분된다.
   - 결과 : `ApiV1PostControllerTest.t11`, `t12` 통과, 테스트 28개 모두 통과.
+
+### 015-1 글 수정 권한 테스트 추가 (실패)
+
+- **링크**
+- **원인** : 글은 작성자 본인만 고칠 수 있어야 한다. 삭제(014)와 같은 규칙을 수정에 대해 먼저 테스트로 정한다.
+- **작업**
+  - 수정 : 테스트 `ApiV1PostControllerTest.t8`(수정) — 1번 글의 작성자 `user1` 을 `actorId` 로 붙여 요청
+  - 추가 : 테스트 `ApiV1PostControllerTest.t13` — `actorId` 없이 1번 글 수정 요청, 401 응답 확인, 제목이 `"제목 1"` 그대로인지 확인
+  - 추가 : 테스트 `ApiV1PostControllerTest.t14` — `user2` 로 1번 글 수정 요청, 403 응답 확인, 제목이 `"제목 1"` 그대로인지 확인
+- **설명**
+  - 실패 확인 : 수정 액션이 요청자를 보지 않아 t13·t14 모두 글이 바뀌고 `Status expected:<401>(<403>) but was:<200>` 로 실패한다.
