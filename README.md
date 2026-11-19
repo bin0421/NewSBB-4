@@ -247,3 +247,18 @@
   - `required = false` + `Integer` 로 받아야 `actorId` 가 없을 때 스프링이 400 을 내기 전에 액션까지 들어온다. 그 뒤 판단은 `getActor()` 한 곳에서 한다.
   - 이후 글·댓글 작성·수정·삭제도 같은 방법(`@RequestParam(required = false) Integer actorId` → `getActor()`)으로 요청자를 얻는다. 파라미터를 명시적으로 받으므로 Swagger 문서에도 `actorId` 가 나온다.
   - 결과 : `ApiV1MemberControllerTest.t5`, `t6` 통과, 테스트 22개 모두 통과.
+
+### 012-1 글 작성자 테스트 추가 (실패)
+
+- **링크**
+- **원인** : 모든 글에는 작성자(`author`)가 있어야 하고, 글 작성은 `?actorId=회원번호` 의 회원이 작성자가 된다. 샘플 글 작성자, 응답의 작성자 정보, 작성 시 작성자, `actorId` 없는 작성 401 을 먼저 테스트로 정한다.
+- **작업**
+  - 추가 : 테스트 `BaseInitDataTest.t3` — 1~3번 글의 작성자 username 이 `user1`, `user2`, `user3` 인지 확인
+  - 수정 : 테스트 `ApiV1PostControllerTest.t1`(다건), `t2`(단건) — 응답의 `authorId`, `authorName` 확인 (1번 글은 `user1`, `유저1`)
+  - 수정 : 테스트 `ApiV1PostControllerTest.t4`(작성) — `actorId` 로 `user1` 의 id 를 붙여 요청, 응답 `data.authorId`·`data.authorName` 과 저장된 글의 작성자 확인
+  - 추가 : 테스트 `ApiV1PostControllerTest.t10` — `actorId` 없이 작성 요청, 401, `"401-1"`, `"로그인 후 이용해주세요."` 확인, 글 수가 3 그대로인지 확인
+- **설명**
+  - 처음 단계 목록의 "글 작성자 / 글 작성 시 작성자 / 글 작성 401" 을 한 단계로 합쳤다. 글에 작성자를 넣으면 작성 API 도 작성자를 받아야 하므로, 나눠 구현하면 "작성자 없는 글"이 만들어지는 중간 상태가 생긴다.
+  - 작성자를 응답에 `authorId`·`authorName` 으로 내보내기로 했다. API 만으로 작성자가 맞게 들어갔는지 확인할 수 있다.
+  - 검증 실패 테스트(t5~t7)는 `actorId` 없이 그대로 둔다. 요청 본문 검증이 액션 실행 전에 일어나므로 400 이 먼저 나간다.
+  - 실패 확인 : `Post.getAuthor()` 가 없어 컴파일에 실패한다.

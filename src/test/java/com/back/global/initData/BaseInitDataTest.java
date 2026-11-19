@@ -55,4 +55,14 @@ public class BaseInitDataTest {
                         tuple("user4", "유저4", "12345678")
                 );
     }
+
+    @Test
+    @DisplayName("샘플 데이터 : 1~3번 글의 작성자는 user1~user3")
+    void t3() {
+        List<Post> posts = postRepository.findAll();
+
+        assertThat(posts)
+                .extracting(post -> post.getAuthor().getUsername())
+                .containsExactly("user1", "user2", "user3");
+    }
 }
