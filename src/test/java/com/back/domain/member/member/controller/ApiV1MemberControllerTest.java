@@ -59,4 +59,35 @@ public class ApiV1MemberControllerTest {
         assertThat(member.getPassword()).isEqualTo("12345678");
         assertThat(member.getName()).isEqualTo("무명");
     }
+
+    @Test
+    @DisplayName("회원가입, 요청 본문 길이 제약 위반")
+    void t2() throws Exception {
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/api/v1/members/join")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "username": "abc",
+                                            "password": "1234567",
+                                            "name": "무"
+                                        }
+                                        """)
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1MemberController.class))
+                .andExpect(handler().methodName("join"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultCode").value("400-1"))
+                .andExpect(jsonPath("$.msg").value("""
+                        name-Size-size must be between 2 and 30
+                        password-Size-size must be between 8 and 30
+                        username-Size-size must be between 4 and 30
+                        """.stripIndent().trim()));
+
+        assertThat(memberService.findByUsername("abc")).isEmpty();
+    }
 }
